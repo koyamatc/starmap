@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+ 	<meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=8;IE=9;IE=10;IE=11;edge;">
+
+  <!-- style -->
+  <link href="../../../css/bootstrap.css" rel="stylesheet">
+  <link href="../../../css/jklmain.css" rel="stylesheet">
+  <link href="../../../assets/googlecodeprettify/sons-of-obsidian.css" rel="stylesheet">
+
+ 	<title>Star Map v0.1</title>
+</head>
+<body>
+  <div class="row">
+    <div class="col-xs-12 col-sm-5 col-md-5">
+      <div id="logo"></div>
+    </div>
+    <div class="col-sm-7 col-md-7">
+      <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-offset-4">
+        <a href="http://koyamatch.com"><h4><span class="glyphicon glyphicon-home text-default"> home</span></h4></a>
+        </div>
+      </div>
+    </div>
+  </div><!--/row-->
+
+  <div class="container">
+    <div class="row">
+      <div class="col-xs-8">
+        <div id="svg01"></div>
+      </div>
+    </div>
+  </div> <!-- container -->
+
+<script src="https://d3js.org/d3.v4.js"></script>
+<script src="bundle.js"></script>
+<script src="../../../assets/googlecodeprettify/prettify.js"></script>
+<script src="../../../js/jquery.js"></script>
+
+<script type="text/javascript">
+
+  var $window = $(window)
+  // make code pretty
+  window.prettyPrint && prettyPrint()
+  $('pre').addClass('prettyprint');
+  prettyPrint();
+  $('pre').css("background","#000");
+  $('pre').css("font-size","1.2em");
+
+</script>
+
+</body>
+
+</html>
