@@ -29,6 +29,12 @@ var Starmap = function(){
   // 点のデータ
   var points0 = [];
   var points = [];
+  var starData = [];
+
+  d3.json("SAO/sao.json", function(error, data){
+ 
+      console.log(data.length);
+  });
 
   var theta = -pi/2;
   for (var i = 0; i <= 23; i++) {
@@ -158,32 +164,35 @@ function draw(){
 
   var keyPressed = {};
 
-  d3.dispatch
+  d3.select("body")
   .on('keydown', function() {
-    keyPressed[d3.event.keyIdentifier] = true;
+    keyPressed[d3.event.keyCode] = true;
   })
   .on('keyup', function() {
-    keyPressed[d3.event.keyIdentifier] = false;
+    keyPressed[d3.event.keyCode] = false;
   });
 
   var rad = aDegree * 1;
 var keyEvent = function() {
   $("#btnUp").focus();
-
-  if (keyPressed['Left']) {
+  // left
+  if (keyPressed[37]) {
     thetaZ -= rad;
     rotation();
   }
-  if (keyPressed['Up']) {
+  // up
+  if (keyPressed[38]) {
     $window.scrollTop(scrollTop);
     thetaX += rad;
     rotation();
   }
-  if (keyPressed['Right']) {
+  // right
+  if (keyPressed[39]) {
     thetaZ += rad;
     rotation();
   }
-  if (keyPressed['Down']) {
+  // down
+  if (keyPressed[40]) {
     $window.scrollTop(scrollTop);
     thetaX -= rad;
     rotation();

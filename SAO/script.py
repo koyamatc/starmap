@@ -15,11 +15,11 @@ for row in in_file:
 
 			text = "{"
 			text += '"id":' + row[0:6]
-			text += ',"RA":' + row[183:193]
-			text += ',"dec":' + row[193:204]
+			text += ',"RA":"' + row[183:193] + '"'
+			text += ',"dec":"' + row[193:204] + '"'
 			text += ',"RA-pm":"' + row[160:167] + '"'
 			text += ',"dec-pm":"' + row[177:183] + '"'
-			text += ',"mag":' + row[80:84]
+			text += ',"mag":"' + row[80:84] + '"'
 
 			text += "}, \n"
 			out_file.write(text)
