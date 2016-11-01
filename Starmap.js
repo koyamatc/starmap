@@ -1,6 +1,9 @@
 // require('./dice.css');
 var $ = require('jquery');
+//var $ = require('jquery-ui');
 var d3 = require('d3');
+
+var screen_pos = 700;
 
 var Starmap = function(){
 
@@ -8,16 +11,14 @@ var Starmap = function(){
   var scrollTop = 250;
   $window.scrollTop(scrollTop);
 
-  var sphereRadius = 400;　// 天球の半径
-  var height = 500,　// 画面の高さ
-      width = 700;  // 画面の幅
+  var sphereRadius = 1000;　// 天球の半径
+  var height = 700,　// 画面の高さ
+      width = 900;  // 画面の幅
   var pi = Math.PI,
-      pi2 = pi * 2,
       aDegree = pi / 180;
   var thetaX = 0,
       thetaY = 0,
       thetaZ = 0;
-  var screen_pos = 350;
 
   function Point3d(x, y, z, label, r){
     this.x = x;
@@ -29,34 +30,36 @@ var Starmap = function(){
   // 点のデータ
   var points0 = [];
   var points = [];
-  var starData = [];
 
   d3.json("SAO/sao.json", function(error, data){
  
-      console.log(data.length);
+    var count = data.length;
+    var x = sphereRadius;
+    var y = 0;
+    var z = 0;
+
+    for (var i = 0; i < count; i++) {
+
+          var RA = -data[i].RA;
+          var dec = -data[i].dec;
+          var mag = data[i].mag;
+          var label = data[i].label;
+          var r = (mag<0)?6:(mag<1.5)?5:(mag<2.5)?3:(mag<3.5)?2:1;
+
+
+          var x0 = x * Math.cos(RA) + y * Math.sin(RA);
+          var y0 = -x * Math.sin(RA) + y * Math.cos(RA);
+          var z0 = z;
+
+          var x1 = x0 * Math.cos(dec) - z0 * Math.sin(dec);
+          var y1 = y0;
+          var z1 = -x0 * Math.sin(dec) + z0 * Math.cos(dec);
+
+          points0.push( new Point3d( x1, y1, z1, label, r ) );
+          if (label != "") {console.log(points0[i])};
+    }      
+
   });
-
-  var theta = -pi/2;
-  for (var i = 0; i <= 23; i++) {
-    var x = sphereRadius * Math.cos(i*aDegree*15);
-    var y = sphereRadius * Math.sin(i*aDegree*15);
-    var x_ = x * Math.cos(theta) + y * Math.sin(theta);
-    var y_ = -x * Math.sin(theta) + y * Math.cos(theta);
-
-    points0.push(new Point3d(x_,y_,0,i,4));
-  };
-
-  theta = aDegree *45;
-  var count = points0.length;
-  for (var i = 0; i < count; i++) {
-    var x_ = points0[i].x * Math.cos(theta) - points0[i].z * Math.sin(theta);
-    var y_ = points0[i].y;
-    var z_ = points0[i].x * Math.sin(theta) + points0[i].z * Math.cos(theta);
-    points0.push(new Point3d(x_,y_,z_,i+count,4));
-  };
-
-  points0.push(new Point3d(1,1,sphereRadius,"Z",10));
-  points0.push(new Point3d(1,1,-sphereRadius,"Z-",10));
 
   for (var i = 0; i < points0.length; i++) {
     if (isInBound(points0[i].x,points0[i].y,points0[i].z)){
@@ -77,7 +80,7 @@ var Starmap = function(){
                        .range([0, width]);
   var yScale = d3.scaleLinear()
                        .domain([-height/2, height/2])
-                       .range([height, 0]);
+                       .range([0,height]);
 
 // 描画処理
 function draw(){
@@ -222,7 +225,7 @@ d3.select("#btnRight").on("click", function(){
 
 /*
 // slider
-$( "#slider" ).slider({min: 100, max: sphereRadius*2, value:screen_pos, step:10, animate: "fast"});
+$( "#slider" ).slider({min: 100, max: 20000, value:screen_pos, step:10, animate: "fast"});
 $("#slider-value").html(screen_pos);
 $( "#slider" ).on( "slidechange", function( event, ui ) {
     $("#slider-value").html(ui.value);

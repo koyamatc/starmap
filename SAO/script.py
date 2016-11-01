@@ -1,7 +1,7 @@
 in_file = open("sao","r")
 out_file = open("sao.json","w")
 
-text = '{ "stardata":[ \n'
+text = '[ \n'
 out_file.write(text)
 
 for row in in_file:
@@ -20,11 +20,12 @@ for row in in_file:
 			text += ',"RA-pm":"' + row[160:167] + '"'
 			text += ',"dec-pm":"' + row[177:183] + '"'
 			text += ',"mag":"' + row[80:84] + '"'
+			text += ',"label":""'
 
 			text += "}, \n"
 			out_file.write(text)
 
-text = "] }"
+text = "]"
 out_file.write(text)
 
 
