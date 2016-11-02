@@ -1,19 +1,18 @@
-// require('./dice.css');
+require('./starmap.css');
 var $ = require('jquery');
-//var $ = require('jquery-ui');
 var d3 = require('d3');
 
-var screen_pos = 700;
+var screen_pos = 1000;
 
 var Starmap = function(){
 
   var $window = $(window);
   var scrollTop = 250;
-  $window.scrollTop(scrollTop);
+//  $window.scrollTop(scrollTop);
 
   var sphereRadius = 1000;　// 天球の半径
-  var height = 700,　// 画面の高さ
-      width = 900;  // 画面の幅
+  var height = Math.floor(window.innerHeight*0.9),　// 画面の高さ
+      width = window.innerWidth ;  // 画面の幅
   var pi = Math.PI,
       aDegree = pi / 180;
   var thetaX = 0,
@@ -41,49 +40,57 @@ var Starmap = function(){
     for (var i = 0; i < count; i++) {
 
           var RA = -data[i].RA;
-          var dec = -data[i].dec;
+          var dec = data[i].dec;
           var mag = data[i].mag;
           var label = data[i].label;
-          var r = (mag<0)?6:(mag<1.5)?5:(mag<2.5)?3:(mag<3.5)?2:1;
+          var r = (mag<0)?6:(mag<1.5)?5:(mag<2.9)?3:(mag<3.9)?2:1;
 
-
-          var x0 = x * Math.cos(RA) + y * Math.sin(RA);
-          var y0 = -x * Math.sin(RA) + y * Math.cos(RA);
-          var z0 = z;
+/*
 
           var x1 = x0 * Math.cos(dec) - z0 * Math.sin(dec);
           var y1 = y0;
           var z1 = -x0 * Math.sin(dec) + z0 * Math.cos(dec);
+*/
+          var x0 = x * Math.cos(dec) - z * Math.sin(dec);
+          var y0 = y;
+          var z0 = -x * Math.sin(dec) + z * Math.cos(dec);
+
+          var x1 = x0 * Math.cos(RA) + y0 * Math.sin(RA);
+          var y1 = -x0 * Math.sin(RA) + y0 * Math.cos(RA);
+          var z1 = z0;
 
           points0.push( new Point3d( x1, y1, z1, label, r ) );
-          if (label != "") {console.log(points0[i])};
+//          if (label != "") {console.log(points0[i])};
     }      
 
+    for (var i = 0; i < points0.length; i++) {
+      if (isInBound(points0[i].x,points0[i].y,points0[i].z)){
+        points.push(points0[i]);
+      }
+    };
+  
   });
 
-  for (var i = 0; i < points0.length; i++) {
-    if (isInBound(points0[i].x,points0[i].y,points0[i].z)){
-      points.push(points0[i]);
-    }
-  };
 
   // svg空間作成
   var svg01 =  d3.select("#svg01")
                  .append("svg:svg")
                  .attr("height", height)
                  .attr("width", width)
-                 .style("background","#111");
+                 .style("background","#000");
 
   // scale
-  var xScale = d3.scaleLinear()
-                       .domain([-width/2, width/2])
-                       .range([0, width]);
-  var yScale = d3.scaleLinear()
-                       .domain([-height/2, height/2])
-                       .range([0,height]);
+  var factor = 1.5;
 
 // 描画処理
 function draw(){
+
+  var xScale = d3.scaleLinear()
+                       .domain([factor*(-width/2), factor*width/2])
+                       .range([0, width]);
+  var yScale = d3.scaleLinear()
+                       .domain([factor*-height/2, factor*height/2])
+                       .range([0,height]);
 
   d3.selectAll("circle").remove();
   d3.selectAll("text").remove();
@@ -110,7 +117,7 @@ function draw(){
    .attr("x", function(d) {
       var x = screen_pos * d.x / d.y;
       return xScale(x);} ) // x座標の位置
-   .attr("y", function(d) { return yScale(d.z -30);}) // y座標の位置
+   .attr("y", function(d) { return yScale(d.z -5);}) // y座標の位置
    .text(function(d) {return d.label;})  // 文字列の設定
    .attr("font-family", "sans-serif") // font属性
    .attr("font-size", "20px") // fontｻｲｽﾞ
@@ -185,7 +192,7 @@ var keyEvent = function() {
   }
   // up
   if (keyPressed[38]) {
-    $window.scrollTop(scrollTop);
+ //   $window.scrollTop(scrollTop);
     thetaX += rad;
     rotation();
   }
@@ -196,7 +203,7 @@ var keyEvent = function() {
   }
   // down
   if (keyPressed[40]) {
-    $window.scrollTop(scrollTop);
+//    $window.scrollTop(scrollTop);
     thetaX -= rad;
     rotation();
   }
@@ -232,6 +239,14 @@ $( "#slider" ).on( "slidechange", function( event, ui ) {
     screen_pos = ui.value;
   } );
 */
+
+function resize() {
+  height = Math.floor(window.innerHeight*0.9);
+  width = window.innerWidth
+  svg01.attr("height",height)
+       .attr("width",width);
+}
+window.onresize = resize;
 
 }
 
