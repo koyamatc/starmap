@@ -1,10 +1,4 @@
-require('./starmap.css');
-var $ = require('jquery');
-var d3 = require('d3');
-
 var screen_pos = 1000;
-
-var Starmap = function(){
 
   var $window = $(window);
   var scrollTop = 250;
@@ -77,7 +71,11 @@ var Starmap = function(){
                  .append("svg:svg")
                  .attr("height", height)
                  .attr("width", width)
-                 .style("background","#000");
+                 .style("background","#000")
+                 .on("mousedown", mouseDown)
+                 .on("mouseup", mouseUp)
+                 .on("touchstart", touchStart)
+                 .on("touchend", touchEnd);
 
   // scale
   var factor = 1.5;
@@ -230,15 +228,44 @@ d3.select("#btnRight").on("click", function(){
     rotation();
 })
 
-/*
 // slider
-$( "#slider" ).slider({min: 100, max: 20000, value:screen_pos, step:10, animate: "fast"});
-$("#slider-value").html(screen_pos);
+$( "#slider" ).slider({min: 0.1, max: 10, value:factor, step:0.2, animate: "fast"});
+$("#slider-value").html(factor);
 $( "#slider" ).on( "slidechange", function( event, ui ) {
     $("#slider-value").html(ui.value);
-    screen_pos = ui.value;
+    factor = ui.value;
   } );
-*/
+
+var mousePos1, mousePos2;
+
+function mouseDown(){
+  mousePos1 = d3.mouse(this);
+}
+function mouseUp(){
+  mousePos2 = d3.mouse(this);
+
+  var deltaX = mousePos2[0] - mousePos1[0];
+  var deltaY = mousePos2[1] - mousePos1[1];
+
+  thetaZ += deltaX / 1000;
+  thetaX -= deltaY / 1000;
+  rotation();
+
+}
+function touchStart(){
+  mousePos1 = d3.touch(svg01);
+}
+function touchEnd(){
+  mousePos2 = d3.touch(svg01);
+
+  var deltaX = mousePos2[0] - mousePos1[0];
+  var deltaY = mousePos2[1] - mousePos1[1];
+
+  thetaZ += deltaX / 1000;
+  thetaX -= deltaY / 1000;
+  rotation();
+
+}
 
 function resize() {
   height = Math.floor(window.innerHeight*0.9);
@@ -247,7 +274,3 @@ function resize() {
        .attr("width",width);
 }
 window.onresize = resize;
-
-}
-
-module.exports = Starmap;
