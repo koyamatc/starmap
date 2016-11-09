@@ -25,7 +25,7 @@ for row in in_file:
 
 	if row[6:7] !="D":
 
-		if mag < 5:
+		if mag < 7:
 
 			text = "{"
 			text += '"id":' + row[0:6]
