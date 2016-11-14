@@ -16,6 +16,19 @@ for row in in_file:
 	id = row[0:6]
 	mag = float(row[80:84])
 	num = int(row[0:6])
+	
+	if mag < 0.5:
+			radius = 6
+	elif mag <1.5:
+			radius = 5
+	elif mag < 2.5:
+			radius = 4
+	elif mag < 3.5:
+			radius = 3
+	elif mag < 4.5:
+			radius = 2
+	else:
+			radius = 1
 
 	if row[0:6] in name_data:
 		label = name_data[row[0:6]]
@@ -34,6 +47,7 @@ for row in in_file:
 			text += ',"RA-pm":"' + row[160:167] + '"'
 			text += ',"dec-pm":"' + row[177:183] + '"'
 			text += ',"mag":"' + row[80:84] + '"'
+			text += ',"r":"' + str(radius) + '"'
 			text += ',"label":"' + label + '"'
 
 			text += "}, \n"

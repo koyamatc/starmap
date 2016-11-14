@@ -13,12 +13,13 @@ var screen_pos = 1000;
       thetaY = 0,
       thetaZ = 0;
 
-  function Point3d(x, y, z, label, r){
+  function Point3d(x, y, z, label, r, mag){
     this.x = x;
     this.y = y;
     this.z = z;
     this.label = label;
     this.r = r;
+    this.mag = mag;
   };
   // 点のデータ
   var points0 = [];
@@ -40,7 +41,7 @@ var screen_pos = 1000;
           dec = data[i].dec;
           mag = data[i].mag;
           label = data[i].label;
-          r = (mag<0)?6:(mag<1.5)?5:(mag<2.9)?3:(mag<3.9)?2:1;
+          r = data[i].r;
 
 /*
 
@@ -56,7 +57,7 @@ var screen_pos = 1000;
           y1 = -x0 * Math.sin(RA) + y0 * Math.cos(RA);
           z1 = z0;
 
-          points0.push( new Point3d( x1, y1, z1, label, r ) );
+          points0.push( new Point3d( x1, y1, z1, label, r , mag) );
 //          if (label != "") {console.log(points0[i])};
     }      
 
@@ -83,6 +84,7 @@ var screen_pos = 1000;
 
   var factor = 3,
       factorY;
+  var mag = 4.5;    
   var xScale, yScale, circle, circleAttributes;
   var angles;   
 
@@ -113,7 +115,18 @@ function draw(){
                 })
                 .attr("cy", function (d) { return yScale(d.z); })
                 .attr("r", function (d) { return d.r; })
-                .style("fill", function(d) { return "#fff";});
+                .style("fill", function(d) { 
+                  var color = "#fff";
+                  if (d.mag>5) color = "#666"
+                  return color;
+                })
+                .attr("opacity",function(d){
+                  var opacity=1;
+                  if (d.mag>=5.5 && d.mag <6.5) {
+                    opacity = 0.5
+                  }
+                  return opacity;
+                });
 
   svg01.selectAll("text")
    .data(points)
@@ -144,7 +157,7 @@ function draw(){
   //　回転
   function rotation(){
 
-      var x,y,z,x1,y1,z1,x2,y2,z2;
+      var x,y,z,x1,y1,z1,x2,y2,z2,mag;
 
       points = [];
 
@@ -155,6 +168,7 @@ function draw(){
           x = points0[i].x;
           y = points0[i].y;
           z = points0[i].z;
+          mag = points0[i].mag;
 
           x0 = x * Math.cos(thetaZ) + y * Math.sin(thetaZ);
           y0 = -x * Math.sin(thetaZ) + y * Math.cos(thetaZ);
@@ -168,16 +182,16 @@ function draw(){
           y2 = y1 * Math.cos(thetaX) + z1 * Math.sin(thetaX);
           z2 = -y1 * Math.sin(thetaX) + z1 * Math.cos(thetaX);
 
-          if ( isInBound( x2, y2, z2) ){
+          if ( isInBound( x2, y2, z2, mag) ){
             points.push( new Point3d( x2, y2, z2, points0[i].label, points0[i].r ));
           }
       };
 
   }
 
-  function isInBound( x, y, z ){
+  function isInBound( x, y, z, m ){
     //console.log(z);
-      if ( y > 0 ) { return true}
+      if ( y > 0 && m <= mag) { return true}
       else { return false}
   }
 
@@ -260,6 +274,15 @@ $( "#slider" ).on( "slidechange", function( event, ui ) {
     var val = Math.floor((5 - ui.value)*10)/10; 
     $("#slider-value").html( val);
     factor = ui.value;
+    draw();
+  } );
+
+$( "#slider-mag" ).slider({min: 3.0, max: 7.0, value:mag, step:0.1, animate: "fast"});
+$("#mag-value").html(mag);
+$( "#slider-mag" ).on( "slidechange", function( event, ui ) {
+    var val = Math.floor(ui.value*10)/10; 
+    $("#mag-value").html( val);
+    mag = ui.value;
     draw();
   } );
 
