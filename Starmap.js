@@ -26,6 +26,8 @@ var screen_pos = 1000;
   var points = [];
 
   d3.json("SAO/sao.json", function(error, data){
+
+    console.log(error);
  
     var count = data.length;
     var x = sphereRadius;
@@ -84,7 +86,7 @@ var screen_pos = 1000;
 
   var factor = 3,
       factorY;
-  var mag = 4.5;    
+  var mag = 5.2;    
   var xScale, yScale, circle, circleAttributes;
   var angles;   
 
@@ -152,7 +154,8 @@ function draw(){
 }
 
   // 初期描画
-  //draw();
+  rotation();
+  draw();
 
   //　回転
   function rotation(){
@@ -241,6 +244,7 @@ var keyEvent = function() {
 };
 */
 var t = d3.timer(function(){
+  rotation();
   draw();
   t.stop();
 },1000);
@@ -283,6 +287,7 @@ $( "#slider-mag" ).on( "slidechange", function( event, ui ) {
     var val = Math.floor(ui.value*10)/10; 
     $("#mag-value").html( val);
     mag = ui.value;
+    rotation();
     draw();
   } );
 
