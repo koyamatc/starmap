@@ -13,13 +13,14 @@ var screen_pos = 1000;
       thetaY = 0,
       thetaZ = 0;
 
-  function Point3d(x, y, z, label, r, mag){
+  function Point3d(x, y, z, label, r, mag, col){
     this.x = x;
     this.y = y;
     this.z = z;
     this.label = label;
     this.r = r;
     this.mag = mag;
+    this.col = col;
   };
   // 点のデータ
   var points0 = [];
@@ -35,7 +36,7 @@ var screen_pos = 1000;
     var z = 0;
 
     var x0,y0,z0,x1,y1,z1;
-    var RA,dec,mag,label,r;
+    var RA,dec,mag,label,r,col;
 
     for (var i = 0; i < count; i++) {
 
@@ -44,6 +45,7 @@ var screen_pos = 1000;
           mag = data[i].mag;
           label = data[i].label;
           r = data[i].r;
+          col = data[i].color 
 
 /*
 
@@ -59,12 +61,12 @@ var screen_pos = 1000;
           y1 = -x0 * Math.sin(RA) + y0 * Math.cos(RA);
           z1 = z0;
 
-          points0.push( new Point3d( x1, y1, z1, label, r , mag) );
+          points0.push( new Point3d( x1, y1, z1, label, r , mag, col) );
 //          if (label != "") {console.log(points0[i])};
     }      
 
     for (var i = 0; i < points0.length; i++) {
-      if (isInBound(points0[i].x,points0[i].y,points0[i].z)){
+      if (isInBound(points0[i].x,points0[i].y,points0[i].z,points0[i].mag)){
         points.push(points0[i]);
       }
     };
@@ -93,7 +95,7 @@ var screen_pos = 1000;
 // 描画処理
 function draw(){
 
-  //console.log(points);
+  console.log(points);
 
   // scale
   xScale = d3.scaleLinear()
@@ -118,9 +120,8 @@ function draw(){
                 .attr("cy", function (d) { return yScale(d.z); })
                 .attr("r", function (d) { return d.r; })
                 .style("fill", function(d) { 
-                  var color = "#fff";
-                  if (d.mag>5) color = "#666"
-                  return color;
+                  console.log(d.col);
+                  return "#fff";
                 })
                 .attr("opacity",function(d){
                   var opacity=1;
@@ -186,7 +187,7 @@ function draw(){
           z2 = -y1 * Math.sin(thetaX) + z1 * Math.cos(thetaX);
 
           if ( isInBound( x2, y2, z2, mag) ){
-            points.push( new Point3d( x2, y2, z2, points0[i].label, points0[i].r ));
+            points.push( new Point3d( x2, y2, z2, points0[i].label, points0[i].r, points0[i].col ));
           }
       };
 

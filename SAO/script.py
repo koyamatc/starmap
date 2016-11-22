@@ -16,6 +16,31 @@ for row in in_file:
 	id = row[0:6]
 	mag = float(row[80:84])
 	num = int(row[0:6])
+	spectral = row[84:87]
+
+	color = "#fff"
+
+	if spectral[0:1] == "O":
+		color = "#21BAED"
+	elif 	spectral[0:1] == "B":
+		color =  "#95D7ED"
+	elif 	spectral[0:1] == "A":
+		color =  "#D3F5EF"
+	elif 	spectral[0:1] == "F":
+		color =  "#fff"
+	elif 	spectral[0:1] == "G":
+		color =  "#fff"
+	elif 	spectral[0:1] == "K":
+		color =  "#ff0"
+	elif 	spectral[0:1] == "M":
+		color =  "#E88E6B"
+	elif 	spectral[0:1] == "L":
+		color =  "#f00"
+	elif 	spectral[0:1] == "T":
+		color =  "#f00"
+
+	
+
 	
 	if mag < 0.5:
 			radius = 6
@@ -46,6 +71,8 @@ for row in in_file:
 			text += ',"dec":"' + row[193:204] + '"'
 			text += ',"RA-pm":"' + row[160:167] + '"'
 			text += ',"dec-pm":"' + row[177:183] + '"'
+			text += ',"spectral":"' + spectral + '"'
+			text += ',"color":"' + color + '"'
 			text += ',"mag":"' + row[80:84] + '"'
 			text += ',"r":"' + str(radius) + '"'
 			text += ',"label":"' + label + '"'
