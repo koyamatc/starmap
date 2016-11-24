@@ -254,8 +254,9 @@ var keyEvent = function() {
 var t = d3.timer(function(){
   rotation();
   draw();
-  t.stop();
-},1000);
+  //t.stop();
+  thetaZ += pi / (720);
+},10000);
 
 // button event
 d3.select("#btnUp").on("click", function(){
