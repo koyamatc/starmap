@@ -46,7 +46,7 @@ for row in in_file:
 			radius = 6
 	elif mag <1.5:
 			radius = 5
-	elif mag < 2.5:
+	elif mag < 2.7:
 			radius = 4
 	elif mag < 3.5:
 			radius = 3
