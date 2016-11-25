@@ -88,7 +88,8 @@ var screen_pos = 1000;
 
   var factor = 3,
       factorY;
-  var mag = 5.2;    
+  var mag = 5.2;
+  var speed = 1;    
   var xScale, yScale, circle, circleAttributes;
   var angles;   
 
@@ -99,11 +100,11 @@ function draw(){
 
   // scale
   xScale = d3.scaleLinear()
-                       .domain([factor*(-width/2), factor*width/2])
-                       .range([0, width]);
+             .domain([factor*Math.cos(pi / -width )*width/2, factor*Math.cos(pi / width)*width/2])
+             .range([0, width]);
   yScale = d3.scaleLinear()
-                       .domain([factor*-height/2, factor*height/2])
-                       .range([0,height]);
+             .domain([factor*-height/2, factor*height/2])
+             .range([0,height]);
 
   d3.selectAll("circle").remove();
   d3.selectAll("text").remove();
@@ -132,7 +133,9 @@ function draw(){
                     opacity = 0.4
                   } 
                   return opacity;
-                });
+                })
+                .exit()
+                .remove();
 
   svg01.selectAll("text")
    .data(points)
@@ -149,7 +152,9 @@ function draw(){
       return d.label;})  // 文字列の設定
    .attr("font-family", "sans-serif") // font属性
    .attr("font-size", "20px") // fontｻｲｽﾞ
-   .style("fill","#fff");
+   .style("fill","#fff")
+   .exit()
+   .remove();
 
 
    angles = "RA= " + Math.floor(thetaZ/aDegree)
@@ -162,9 +167,9 @@ function draw(){
   draw();
 
   //　回転
+  var x_r,y_r,z_r,x0_r,y0_r,z0_r,x1_r,y1_r,z1_r,x2_r,y2_r,z2_r,mag_r;
   function rotation(){
 
-      var x,y,z,x1,y1,z1,x2,y2,z2,mag;
 
       points = [];
 
@@ -172,25 +177,25 @@ function draw(){
 
       for (var i = 0; i < count; i++) {
 
-          x = points0[i].x;
-          y = points0[i].y;
-          z = points0[i].z;
-          mag = points0[i].mag;
+          x_r = points0[i].x;
+          y_r = points0[i].y;
+          z_r = points0[i].z;
+          mag_r = points0[i].mag;
 
-          x0 = x * Math.cos(thetaZ) + y * Math.sin(thetaZ);
-          y0 = -x * Math.sin(thetaZ) + y * Math.cos(thetaZ);
-          z0 = z;
+          x0_r = x_r * Math.cos(thetaZ) + y_r * Math.sin(thetaZ);
+          y0_r = -x_r * Math.sin(thetaZ) + y_r * Math.cos(thetaZ);
+          z0_r = z_r;
 
-          x1 = x0 * Math.cos(thetaY) - z0 * Math.sin(thetaY);
-          y1 = y0;
-          z1 = -x0 * Math.sin(thetaY) + z0 * Math.cos(thetaY);
+          x1_r = x0_r * Math.cos(thetaY) - z0_r * Math.sin(thetaY);
+          y1_r = y0_r;
+          z1_r = -x0_r * Math.sin(thetaY) + z0_r * Math.cos(thetaY);
 
-          x2 = x1;
-          y2 = y1 * Math.cos(thetaX) + z1 * Math.sin(thetaX);
-          z2 = -y1 * Math.sin(thetaX) + z1 * Math.cos(thetaX);
+          x2_r = x1_r;
+          y2_r = y1_r * Math.cos(thetaX) + z1_r * Math.sin(thetaX);
+          z2_r = -y1_r * Math.sin(thetaX) + z1_r * Math.cos(thetaX);
 
-          if ( isInBound( x2, y2, z2, mag) ){
-            points.push( new Point3d( x2, y2, z2, 
+          if ( isInBound( x2_r, y2_r, z2_r, mag_r) ){
+            points.push( new Point3d( x2_r, y2_r, z2_r, 
                                       points0[i].label, points0[i].r,
                                       points0[i].mag, points0[i].col ));
           }
@@ -207,7 +212,7 @@ function draw(){
   }
 
   var rad = aDegree * 1;
-/*
+
   var keyPressed = {};
 
   d3.select("body")
@@ -250,13 +255,14 @@ var keyEvent = function() {
     draw();
     t.stop();
 };
-*/
-var t = d3.timer(function(){
+
+var t = d3.timer(autoRotation);
+
+function autoRotation(){
+  thetaZ += (pi / 3600) * speed;
   rotation();
   draw();
-  //t.stop();
-  thetaZ += pi / (720);
-},10000);
+}
 
 // button event
 d3.select("#btnUp").on("click", function(){
@@ -280,6 +286,13 @@ d3.select("#btnRight").on("click", function(){
     draw();
 })
 
+d3.select("#autoStart").on("click", function(){
+  t.restart(autoRotation);
+})
+d3.select("#autoStop").on("click", function(){
+  t.stop();
+})
+
 // slider
 $( "#slider" ).slider({min: 0.1, max: 5, value:factor, step:0.1, animate: "fast"});
 $("#slider-value").html(4-factor);
@@ -296,6 +309,16 @@ $( "#slider-mag" ).on( "slidechange", function( event, ui ) {
     var val = Math.floor(ui.value*10)/10; 
     $("#mag-value").html( val);
     mag = ui.value;
+    rotation();
+    draw();
+  } );
+
+$( "#slider-speed" ).slider({min: 1.0, max: 60.0, value:speed, step:1, animate: "fast"});
+$("#speed-value").html(speed);
+$( "#slider-speed" ).on( "slidechange", function( event, ui ) {
+    var val = Math.floor(ui.value*10)/10; 
+    $("#speed-value").html( val);
+    speed = ui.value;
     rotation();
     draw();
   } );
