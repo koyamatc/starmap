@@ -100,7 +100,7 @@ function draw(){
 
   // scale
   xScale = d3.scaleLinear()
-             .domain([factor*Math.cos(pi / -width )*width/2, factor*Math.cos(pi / width)*width/2])
+             .domain([factor*-width/2, factor*width/2])
              .range([0, width]);
   yScale = d3.scaleLinear()
              .domain([factor*-height/2, factor*height/2])
@@ -115,7 +115,7 @@ function draw(){
                 .enter()
                 .append("circle")
                 .attr("cx", function (d) {
-                        var x = screen_pos * d.x / d.y;
+                        var x = screen_pos *  d.x / d.y ;
                         return xScale(x);
                 })
                 .attr("cy", function (d) { return yScale(d.z); })
