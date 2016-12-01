@@ -16,7 +16,11 @@ for row in in_file:
 	id = row[0:6]
 	mag = float(row[80:84])
 	num = int(row[0:6])
-	spectral = row[84:87]
+	
+	if id == "184415":
+		spectral = "M1 "
+	else:	
+		spectral = row[84:87]
 
 	color = "#fff"
 
@@ -33,7 +37,7 @@ for row in in_file:
 	elif 	spectral[0:1] == "K":
 		color =  "#ff0"
 	elif 	spectral[0:1] == "M":
-		color =  "#E88E6B"
+		color =  "#f00"
 	elif 	spectral[0:1] == "L":
 		color =  "#f00"
 	elif 	spectral[0:1] == "T":
