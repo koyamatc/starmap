@@ -14,7 +14,8 @@ var screen_pos = 1000;
       thetaZ = pi;
   var lang = "JP";    
 
-  function Point3d(x, y, z, label, jlabel, r, mag, col){
+  function Point3d(id, x, y, z, label, jlabel, r, mag, col){
+    this.id = id;
     this.x = x;
     this.y = y;
     this.z = z;
@@ -67,7 +68,7 @@ var screen_pos = 1000;
     var z = 0;
 
     var x0,y0,z0,x1,y1,z1;
-    var RA,dec,mag,label,jlabel,r,col;
+    var RA,dec,mag,label,jlabel,r,col,saoId;
     var inc = aDegree * 35;
 
     for (var i = 0; i < count; i++) {
@@ -79,7 +80,8 @@ var screen_pos = 1000;
               jlabel = jname[id];
             }
           }
-     
+          
+          saoId = data[i].id;
           RA = -data[i].RA;
           dec = data[i].dec;
           mag = data[i].mag;
@@ -105,7 +107,7 @@ var screen_pos = 1000;
           y2 = y1 * Math.cos(inc) + z1 * Math.sin(inc);
           z2 = -y1 * Math.sin(inc) + z1 * Math.cos(inc);
 */
-          points0.push( new Point3d( x1, y1, z1, label, jlabel, r , mag, col) );
+          points0.push( new Point3d( saoId, x1, y1, z1, label, jlabel, r , mag, col) );
 //          if (label != "") {console.log(points0[i])};
     }      
 
@@ -202,7 +204,8 @@ function draw(){
       ////console.log(lang);
       if (lang == "Non"){ return ""; }
       else if (lang == "JP"){ return d.jlabel; }
-      else if (lang == "EN"){ return d.label; };
+      else if (lang == "EN"){ return d.label; }
+      else if (lang == "Id"){ return d.id; };
 
       })  // 文字列の設定
    .attr("font-family", "sans-serif") // font属性
@@ -246,7 +249,8 @@ function draw(){
           z2_r = -y1_r * Math.sin(thetaX) + z1_r * Math.cos(thetaX);
 
           if ( isInBound( x2_r, y2_r, z2_r, mag_r) ){
-            points.push( new Point3d( x2_r, y2_r, z2_r, 
+            points.push( new Point3d( points0[i].id,
+                                      x2_r, y2_r, z2_r, 
                                       points0[i].label, points0[i].jlabel, 
                                       points0[i].r,
                                       points0[i].mag, points0[i].col ));

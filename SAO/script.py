@@ -2,14 +2,11 @@ import json
 
 in_file = open("sao","r")
 name_file = open("starname.txt","r")
-jname_file = open("starnameJ.txt","r")
 out_file = open("sao.json","w")
 
 name_data = json.load(name_file)
-jname_data = json.load(jname_file)
 
 print name_data["   308"]
-print jname_data["   308"]
 
 text = '[ \n'
 out_file.write(text)
@@ -67,11 +64,6 @@ for row in in_file:
 	else:
 		label = ""
 
-	if row[0:6] in jname_data:
-		jlabel = "u'"+ jname_data[row[0:6]] + "'"
-	else:
-		jlabel = ""
-
 
 	if row[6:7] !="D":
 
@@ -88,12 +80,10 @@ for row in in_file:
 			text += ',"mag":"' + row[80:84] + '"'
 			text += ',"r":"' + str(radius) + '"'
 			text += ',"label":"' + label + '"'
-			text += ',"jlabel":' + jlabel 
 
 			text += "}, \n"
 
-			print text
-			
+	
 			out_file.write(text)
 
 text = "]"
@@ -103,4 +93,3 @@ out_file.write(text)
 out_file.close()
 in_file.close()
 name_file.close()
-jname_file.close()

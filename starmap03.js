@@ -13,15 +13,43 @@ var screen_pos = 1000;
       thetaY = 0,
       thetaZ = pi;
 
-  function Point3d(x, y, z, label, r, mag, col){
+  function Point3d(x, y, z, label, jlabel, r, mag, col){
     this.x = x;
     this.y = y;
     this.z = z;
     this.label = label;
+    this.jlabel = jlabel;
     this.r = r;
     this.mag = mag;
     this.col = col;
   };
+  jname = 
+  {
+"   308":"北極星",
+" 28737":"ミザール",
+" 38592":"アルゴル",
+" 40186":"カペラ",
+" 49941":"デネブ",
+" 67174":"ベガ",
+" 60198":"カストル",
+" 79666":"ポルックス",
+" 99809":"デネボラ",
+" 94027":"アルデバラン",
+" 98967":"レグルス",
+"100944":"アルクツールス",
+"113271":"ベテルギュース", 
+"115756":"プロキオン",
+"125122":"アルタイル",
+"131907":"リゲル", 
+"136871":"アルファード",
+"147420":"クジラ座ベータ",
+"151881":"シリウス", 
+"157923":"スピカ",
+"184415":"アンタレス",
+"191524":"フォーマルハウト",
+"232481":"アケルナル",
+"234480":"カノープス"
+}
   // 点のデータ
   var points0 = [];
   var points = [];
@@ -36,11 +64,17 @@ var screen_pos = 1000;
     var z = 0;
 
     var x0,y0,z0,x1,y1,z1;
-    var RA,dec,mag,label,r,col;
+    var RA,dec,mag,label,jlabel,r,col;
     var inc = aDegree * 35;
 
     for (var i = 0; i < count; i++) {
-
+   /*
+          for (var id in jname) {
+            if (id == data[i].id){
+              console.log(jname[id]);
+            }
+          }
+     */
           RA = -data[i].RA;
           dec = data[i].dec;
           mag = data[i].mag;
@@ -66,7 +100,7 @@ var screen_pos = 1000;
           y2 = y1 * Math.cos(inc) + z1 * Math.sin(inc);
           z2 = -y1 * Math.sin(inc) + z1 * Math.cos(inc);
 */
-          points0.push( new Point3d( x1, y1, z1, label, r , mag, col) );
+          points0.push( new Point3d( x1, y1, z1, label, jlabel, r , mag, col) );
 //          if (label != "") {console.log(points0[i])};
     }      
 
@@ -205,7 +239,8 @@ function draw(){
 
           if ( isInBound( x2_r, y2_r, z2_r, mag_r) ){
             points.push( new Point3d( x2_r, y2_r, z2_r, 
-                                      points0[i].label, points0[i].r,
+                                      points0[i].label, points0[i].jlabel, 
+                                      points0[i].r,
                                       points0[i].mag, points0[i].col ));
           }
       };
