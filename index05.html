@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="jp">
+<head>
+ 	<meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <meta http-equiv="X-UA-Compatible" content="IE=8;IE=9;IE=10;IE=11;edge;">
+
+  <!-- style -->
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+  <link href="../../../css/jklmain.css" rel="stylesheet">
+  <link href="starmap.css" rel="stylesheet">
+  <link href="../css/jquery-ui.css" rel="stylesheet">
+  <link href="../../../assets/googlecodeprettify/sons-of-obsidian.css" rel="stylesheet">
+
+ 	<title>Star Map v0.4</title>
+</head>
+<body>
+  <div class="row head">
+    <div class="col-xs-12 col-sm-5 col-md-5">
+      <h2>Star Map</h2>
+    </div>
+    <div class="col-sm-7 col-md-7">
+      <div class="row">
+        <div class="col-md-4"></div>
+        <div class="col-md-offset-4">
+        <a href="http://koyamatch.com"><h4><span class="glyphicon glyphicon-home text-default"> home</span></h4></a>
+        </div>
+      </div>
+    </div>
+  </div><!--/row-->
+
+  <div class="row svg-container">
+    <div id="svg01" ></div>
+  </div>
+  
+  <div class="container">
+    <div class="row">
+      <div class="col-md-6 col-xs-6">
+        <p>マウスのドラッグ、　スワイプで画面を移動</p>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-4 col-xs-6">
+        <span>Declination= </span><span id="dec-value"></span>
+        <div id="slider-dec"></div>
+      </div>
+   </div>
+    <div class="row">
+      <div class="col-md-4 col-xs-6">
+        <span>ZOOM= </span><span id="slider-value"></span>
+        <div id="slider"></div>
+      </div>
+   </div>
+   <div class="row">
+      <div class="col-md-4 col-xs-6">
+        <span>mag= </span><span id="mag-value"></span>
+        <div id="slider-mag"></div>
+      </div>
+   </div>
+   <div class="row">
+      <div class="col-md-4 col-xs-6">
+        <span>speed= </span><span id="speed-value"></span>
+        <div id="slider-speed"></div>
+      </div>
+   </div>
+
+   <div class="row">
+      <div class="col-md-2 col-xs-3">
+        <button id="autoStart" class="btn-info">回転開始</button>
+      </div>
+      <div class="col-md-2 col-xs-3">
+        <button id="autoStop" class="btn-info">回転停止</button>
+      </div>
+   </div>
+   <div class="row">
+      <div class="col-xs-2">
+        <div>星名</div>
+        <select id="starname" class="form-control" onChange="starnameChange()">
+          <option value="JP">日本語</option>
+          <option value="EN">English</option>
+          <option value="Non">非表示</option>
+          <option value="Id">Id</option>
+        </select>
+      </div>   
+   </div>
+  </div> <!-- container -->
+
+<script src="../../../assets/googlecodeprettify/prettify.js"></script>
+<script src="//code.jquery.com/jquery-1.11.3.js"></script>
+<script src="//code.jquery.com/ui/1.11.4/jquery-ui.js"></script>
+<script src="http://d3js.org/d3.v4.min.js" charset="utf-8"></script>
+<!-- Latest compiled and minified JavaScript -->
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script><script src="starmap0501.js"></script>
+<script type="text/javascript">
+
+  var $window = $(window)
+  // make code pretty
+  window.prettyPrint && prettyPrint()
+  $('pre').addClass('prettyprint');
+  prettyPrint();
+  $('pre').css("background","#000");
+  $('pre').css("font-size","1.2em");
+
+  
+
+</script>
+
+</body>
+
+</html>
