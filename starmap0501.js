@@ -14,7 +14,7 @@ var screen_pos = 1000;
       thetaZ = pi;
   var lang = "JP";    
 
-  function Point3d(id, x, y, z, label, jlabel, r, mag, col){
+  function Point3d(id, x, y, z, label, jlabel, r, mag, col, h){
     this.id = id;
     this.x = x;
     this.y = y;
@@ -24,6 +24,7 @@ var screen_pos = 1000;
     this.r = r;
     this.mag = mag;
     this.col = col;
+    this.h = h;
   };
   jname = 
   {
@@ -34,6 +35,7 @@ var screen_pos = 1000;
 " 49941":"デネブ",
 " 67174":"ベガ",
 " 60198":"カストル",
+" 79666":"61Cyg",
 " 79666":"ポルックス",
 " 99809":"デネボラ",
 " 94027":"アルデバラン",
@@ -58,13 +60,14 @@ var screen_pos = 1000;
   var points0 = [];
   var points = [];
 
-  var Theta = 0;  // 恒星時
-  var phi = aDegree * 35;　//　緯度
+  var Theta = 253.03262168375653 * aDegree;  // 恒星時
+  var phi = aDegree * 35.788;　//　緯度
   var cos_phi = Math.cos(phi);
+  console.log(cos_phi);
   var sin_phi = Math.sin(phi);
+  console.log(sin_phi);
 
-
-  d3.json("SAO/sao.json", function(error, data){
+  d3.json("SAO/sao1950.json", function(error, data){
 
     console.log(error);
  
@@ -88,7 +91,7 @@ var screen_pos = 1000;
           }
           
           saoId = data[i].id;
-          alpha = -data[i].RA;
+          alpha = data[i].RA;
           delta = data[i].dec;
           mag = data[i].mag;
           label = data[i].label;
@@ -110,7 +113,16 @@ var screen_pos = 1000;
           var cos_h_sin_A =cos_delta * sin_Theta_alpha;
           var tan_A = cos_h_sin_A / cos_h_cos_A;
           var A1 = Math.atan(tan_A);
+          var RA = (cos_h_cos_A<0)?A1+pi:A1+2*pi;
+          var dec = h;
 
+          if (saoId == "70919") {
+            //console.log(cos_Theta_alpha);
+            //console.log(sin_Theta_alpha);
+            console.log(cos_phi_cos_delta_cos_Theta_alpha);
+            console.log(RA/aDegree);
+            console.log(dec/aDegree);
+          }
 
 
 
@@ -131,12 +143,12 @@ var screen_pos = 1000;
           y2 = y1 * Math.cos(inc) + z1 * Math.sin(inc);
           z2 = -y1 * Math.sin(inc) + z1 * Math.cos(inc);
 */
-          points0.push( new Point3d( saoId, x1, y1, z1, label, jlabel, r , mag, col) );
+          points0.push( new Point3d( saoId, x1, y1, z1, label, jlabel, r , mag, col, h) );
 //          if (label != "") {console.log(points0[i])};
     }      
 
     for (var i = 0; i < points0.length; i++) {
-      if (isInBound(points0[i].x,points0[i].y,points0[i].z,points0[i].mag)){
+      if (isInBound(points0[i].x,points0[i].y,points0[i].z,points0[i].mag,points0[i].h)){
         points.push(points0[i]);
       }
     };
@@ -272,7 +284,7 @@ function draw(){
           y2_r = y1_r * Math.cos(thetaX) + z1_r * Math.sin(thetaX);
           z2_r = -y1_r * Math.sin(thetaX) + z1_r * Math.cos(thetaX);
 
-          if ( isInBound( x2_r, y2_r, z2_r, mag_r) ){
+          if ( isInBound( x2_r, y2_r, z2_r, mag_r,0 ){
             points.push( new Point3d( points0[i].id,
                                       x2_r, y2_r, z2_r, 
                                       points0[i].label, points0[i].jlabel, 
@@ -285,9 +297,9 @@ function draw(){
 
   }
 
-  function isInBound( x, y, z, m ){
+  function isInBound( x, y, z, m, h ){
     //console.log(z);
-      if ( y > 0 && m <= mag) { return true}
+      if ( h > 0 && m <= mag) { return true}
       else { return false}
   }
 
@@ -343,6 +355,7 @@ function autoRotation(){
   thetaZ += (pi / 3600) * speed;
   rotation();
   draw();
+  t.stop();
 }
 
 // button event
