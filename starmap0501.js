@@ -59,6 +59,8 @@ var screen_pos = 1000;
   // 点のデータ
   var points0 = [];
   var points = [];
+  var pathEquator0 = [];
+  var pathEquator = [];
 
   var Theta = 253.03262168375653 * aDegree;  // 恒星時
   var phi = aDegree * 35.788;　//　緯度
@@ -147,9 +149,47 @@ var screen_pos = 1000;
 //          if (label != "") {console.log(points0[i])};
     }      
 
+    // equator data
+    for (var i = 0; i <= pi*2; i+=aDegree*3) {
+          var x = sphereRadius;
+          var y = 0;
+          var z = 0;
+          var delta = 0;
+          var alpha = i; 
+          var Theta_alpha = Theta - alpha;
+          var cos_Theta_alpha = Math.cos(Theta_alpha);
+          var sin_Theta_alpha = Math.sin(Theta_alpha);
+          var cos_delta = Math.cos(delta);
+          var sin_delta = Math.sin(delta);
+          var sin_phi_sin_delta = sin_phi * sin_delta;
+          var cos_phi_cos_delta_cos_Theta_alpha = cos_phi * cos_delta * cos_Theta_alpha;
+          var sin_h = sin_phi_sin_delta + cos_phi_cos_delta_cos_Theta_alpha;
+          var h = Math.asin(sin_h);
+          var minus_cos_phi_sin_delta = -cos_phi * sin_delta;
+          var sin_phi_cos_delta_cos_Theta_alpha = sin_phi * cos_delta * cos_Theta_alpha;
+          var cos_h_cos_A = minus_cos_phi_sin_delta + sin_phi_cos_delta_cos_Theta_alpha;
+          var cos_h_sin_A =cos_delta * sin_Theta_alpha;
+          var tan_A = cos_h_sin_A / cos_h_cos_A;
+          var A1 = Math.atan(tan_A);
+          var RA = (cos_h_cos_A<0)?A1+pi:A1+2*pi;
+          var dec = h;
+
+          x0 = x * Math.cos(dec) - z * Math.sin(dec);
+          y0 = y;
+          z0 = -x * Math.sin(dec) + z * Math.cos(dec);
+
+          x1 = x0 * Math.cos(RA) + y0 * Math.sin(RA);
+          y1 = -x0 * Math.sin(RA) + y0 * Math.cos(RA);
+          z1 = z0;
+
+      pathEquator0.push( new Point3d( "", x1, y1, z1, "", "", 2 , 1, "#f00", h) );
+    
+    };
+
+
     for (var i = 0; i < points0.length; i++) {
       if (isInBound(points0[i].x,points0[i].y,points0[i].z,points0[i].mag,points0[i].h)){
-        points.push(points0[i]);
+        pathEquator.push(points0[i]);
       }
     };
   
@@ -191,6 +231,22 @@ function draw(){
 
   d3.selectAll("circle").remove();
   d3.selectAll("text").remove();
+  d3.selectAll("path").remove();
+
+  var equator = d3.line()
+                .x(function(d) { 
+                  var x = sphereRadius *  d.x / (-sphereRadius - d.y) 
+                  return xScale(-x); })
+                .y(function(d) { 
+                  var z = sphereRadius *  d.z / (-sphereRadius - d.y)
+                  return yScale(-z); });
+                //.interpolate("linear");  
+    var pathString = equator(pathEquator);
+    svg01.append("path")
+    .attr('d', pathString)
+    .attr("stroke","#f0f")
+    .attr("stroke-width","2px");
+
 
   /** add circles */
   svg01.selectAll("circle")
@@ -262,6 +318,7 @@ function draw(){
 
 
       points = [];
+      pathEquator = [];
 
       var count = points0.length;
 
@@ -284,14 +341,47 @@ function draw(){
           y2_r = y1_r * Math.cos(thetaX) + z1_r * Math.sin(thetaX);
           z2_r = -y1_r * Math.sin(thetaX) + z1_r * Math.cos(thetaX);
 
-          if ( isInBound( x2_r, y2_r, z2_r, mag_r,0 ){
+          if ( isInBound( x2_r, y2_r, z2_r, mag_r,1 )){
             points.push( new Point3d( points0[i].id,
                                       x2_r, y2_r, z2_r, 
                                       points0[i].label, points0[i].jlabel, 
                                       points0[i].r,
-                                      points0[i].mag, points0[i].col ));
+                                      points0[i].mag, points0[i].col,
+                                      points0[i].h ));
           }
       };
+
+      count = pathEquator0.length;
+
+      for (var i = 0; i < count; i++) {
+
+          x_r = pathEquator0[i].x;
+          y_r = pathEquator0[i].y;
+          z_r = pathEquator0[i].z;
+          mag_r = pathEquator0[i].mag;
+
+          x0_r = x_r * Math.cos(thetaZ) + y_r * Math.sin(thetaZ);
+          y0_r = -x_r * Math.sin(thetaZ) + y_r * Math.cos(thetaZ);
+          z0_r = z_r;
+
+          x1_r = x0_r * Math.cos(thetaY) - z0_r * Math.sin(thetaY);
+          y1_r = y0_r;
+          z1_r = -x0_r * Math.sin(thetaY) + z0_r * Math.cos(thetaY);
+
+          x2_r = x1_r;
+          y2_r = y1_r * Math.cos(thetaX) + z1_r * Math.sin(thetaX);
+          z2_r = -y1_r * Math.sin(thetaX) + z1_r * Math.cos(thetaX);
+
+          if ( true /*isInBound( x2_r, y2_r, z2_r, mag_r,1 )*/){
+            pathEquator.push( new Point3d( pathEquator0[i].id,
+                                      x2_r, y2_r, z2_r, 
+                                      pathEquator0[i].label, pathEquator0[i].jlabel, 
+                                      pathEquator0[i].r,
+                                      pathEquator0[i].mag, pathEquator0[i].col,
+                                      pathEquator0[i].h ));
+          }
+      };
+
 
 //      console.log(points);
 
