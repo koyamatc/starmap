@@ -9,10 +9,70 @@ var screen_pos = 1000;
       width = window.innerWidth ;  // 画面の幅
   var pi = Math.PI,
       aDegree = pi / 180;
-  var thetaX = -aDegree*35,
+  var thetaX = -aDegree*90,
       thetaY = 0,
       thetaZ = pi;
   var lang = "JP";    
+
+// formating Date yyyy-mm-dd
+function formatDate(year,month,day){
+
+  var yeat0 = year.toString();
+  var month0 = month.toString();
+  var day0 = day.toString(); 
+  if (month0.length < 2){
+     month0 = "0" + month0; 
+  }
+  if (day0.length < 2){
+     day0 = "0" + day0; 
+  }
+
+  var formatDateString = 
+        yeat0 + "-" + month0 + "-" + day0;
+
+  return formatDateString;
+}
+
+// formating Time hh:mm 
+function formatTime(hour,minute){
+
+  var hour0 = hour.toString();
+  var minute0 = minute.toString(); 
+  if (hour0.length < 2){
+     hour0 = "0" + hour0; 
+  }
+  if (minute0.length < 2){
+     minute0 = "0" + minute0; 
+  }
+
+  var formatTimeString = 
+        hour0 + ":" + minute0;
+
+  return formatTimeString;
+}
+
+// 日付変数
+var year_,month_,day_,hour_,minute_,date_;
+// 日付表示用オプション
+var options = {
+    weekday: "long", year: "numeric", month: "2-digit",
+    day: "2-digit", hour: "2-digit", minute: "2-digit"
+};
+
+// 画面初期設定
+//日時の取得
+  date_ = new Date();
+  year_ = date_.getFullYear();
+  month_ = date_.getMonth()+1;
+  day_ = date_.getDate();
+  hour_ = date_.getHours();
+  minute_ = date_.getMinutes();
+// 初期値設定
+  var dateString = formatDate(year_, month_, day_);
+  $("#inputDate").val(dateString);
+  var timeString = formatTime(hour_, minute_);
+  $("#inputTime").val(timeString);
+  $("#inputDif").val(-9);
 
   function Point3d(id, x, y, z, label, jlabel, r, mag, col, h){
     this.id = id;
@@ -26,6 +86,29 @@ var screen_pos = 1000;
     this.col = col;
     this.h = h;
   };
+
+  //  JED
+  var datetime = new Date(year_, month_, day_, hour_,minute_, 0);
+  var dif = Math.floor($("#inputDif").val());
+  var result = getJED(datetime, dif );
+  T = result.T;
+  $("#JED").html("JED= " + result.JED + " T= " + T);
+  datetime.setMonth (datetime.getMonth() - 1 );
+  $("#JST").html( datetime.toLocaleDateString("ja-JP", options) );
+
+  //観測日
+  var date = new Date(1978,6,10,21,20,0,0);
+  // 平均恒星時
+  var meanSidereal = getMeanSiderealTime(datetime);
+  var h = meanSidereal.time.hours;
+  var m = meanSidereal.time.minutes;
+  var s = meanSidereal.time.seconds;
+  var l = meanSidereal.time.milliseconds;
+
+  var theta0 = new Date(0,0,0,h,m,s,l);
+  var sidereal = getSiderealTime(datetime,139,31,53.6,theta0);
+  $("#theta").html(sidereal.total +"°");   
+  var theta_rad = sidereal.radians;
   jname = 
   {
 "   308":"北極星",
@@ -61,15 +144,42 @@ var screen_pos = 1000;
   var points = [];
   var pathEquator0 = [];
   var pathEquator = [];
+  var pathHorizon0 = [];
+  var pathHorizon = [];
+  var pathSigo0 = [];
+  var pathSigo = [];
 
-  var Theta = 253.03262168375653 * aDegree;  // 恒星時
+  //var Theta = 270.03262168375653 * aDegree;  // 恒星時
+//  var Theta = sidereal.radians;//pi * 2 * T;
+  var Theta = pi * 2 * T * 100;
+  
   var phi = aDegree * 35.788;　//　緯度
   var cos_phi = Math.cos(phi);
-  console.log(cos_phi);
   var sin_phi = Math.sin(phi);
-  console.log(sin_phi);
 
-  d3.json("SAO/sao1950.json", function(error, data){
+function calc(alpha, delta){
+    var Theta_alpha = Theta - alpha;
+    var cos_Theta_alpha = Math.cos(Theta_alpha);
+    var sin_Theta_alpha = Math.sin(Theta_alpha);
+    var cos_delta = Math.cos(delta);
+    var sin_delta = Math.sin(delta);
+    var sin_phi_sin_delta = sin_phi * sin_delta;
+    var cos_phi_cos_delta_cos_Theta_alpha = cos_phi * cos_delta * cos_Theta_alpha;
+    var sin_h = sin_phi_sin_delta + cos_phi_cos_delta_cos_Theta_alpha;
+    var h = Math.asin(sin_h);
+    var minus_cos_phi_sin_delta = -cos_phi * sin_delta;
+    var sin_phi_cos_delta_cos_Theta_alpha = sin_phi * cos_delta * cos_Theta_alpha;
+    var cos_h_cos_A = minus_cos_phi_sin_delta + sin_phi_cos_delta_cos_Theta_alpha;
+    var cos_h_sin_A =cos_delta * sin_Theta_alpha;
+    var tan_A = cos_h_sin_A / cos_h_cos_A;
+    var A1 = Math.atan(tan_A);
+    var RA = (cos_h_cos_A<0)?A1+pi:A1+2*pi;
+
+    return {RA:RA,dec:h}
+}
+
+/** 星データを取り込む　**/
+  d3.json("SAO/sao.json", function(error, data){
 
     console.log(error);
  
@@ -80,7 +190,7 @@ var screen_pos = 1000;
 
     var x0,y0,z0,x1,y1,z1;
     var alpha,delta,mag,label,jlabel,r,col,saoId;
-    var inc = aDegree * 0;
+    var inc = aDegree * -90;
 
     for (var i = 0; i < count; i++) {
 
@@ -93,13 +203,13 @@ var screen_pos = 1000;
           }
           
           saoId = data[i].id;
-          alpha = data[i].RA;
-          delta = data[i].dec;
+          RA = data[i].RA;
+          dec = data[i].dec;
           mag = data[i].mag;
           label = data[i].label;
           r = data[i].r;
           col = data[i].color 
-
+/*
           var Theta_alpha = Theta - alpha;
           var cos_Theta_alpha = Math.cos(Theta_alpha);
           var sin_Theta_alpha = Math.sin(Theta_alpha);
@@ -118,21 +228,12 @@ var screen_pos = 1000;
           var RA = (cos_h_cos_A<0)?A1+pi:A1+2*pi;
           var dec = h;
 
-          if (saoId == "70919") {
-            //console.log(cos_Theta_alpha);
-            //console.log(sin_Theta_alpha);
-            console.log(cos_phi_cos_delta_cos_Theta_alpha);
-            console.log(RA/aDegree);
-            console.log(dec/aDegree);
-          }
 
-
-
-/*
-          x1 = x0 * Math.cos(dec) - z0 * Math.sin(dec);
-          y1 = y0;
-          z1 = -x0 * Math.sin(dec) + z0 * Math.cos(dec);
 */
+          var result = calc(RA, dec);
+          var RA = result.RA;
+          var dec = result.dec;
+
           x0 = x * Math.cos(dec) - z * Math.sin(dec);
           y0 = y;
           z0 = -x * Math.sin(dec) + z * Math.cos(dec);
@@ -140,22 +241,40 @@ var screen_pos = 1000;
           x1 = x0 * Math.cos(RA) + y0 * Math.sin(RA);
           y1 = -x0 * Math.sin(RA) + y0 * Math.cos(RA);
           z1 = z0;
-/*
-          x2 = x1;
-          y2 = y1 * Math.cos(inc) + z1 * Math.sin(inc);
-          z2 = -y1 * Math.sin(inc) + z1 * Math.cos(inc);
-*/
-          points0.push( new Point3d( saoId, x1, y1, z1, label, jlabel, r , mag, col, h) );
+
+          if (saoId == "  308") {
+            console.log(RA/aDegree);
+            console.log(dec/aDegree);
+            console.log("x=" + x1 + " y="+y1 + " z="+z1);
+          }
+         if (saoId == " 28737") {
+            console.log(RA/aDegree);
+            console.log(dec/aDegree);
+            console.log("x=" + x1 + " y="+y1 + " z="+z1);
+          }
+         if (saoId == " 67174") {
+            console.log(RA/aDegree);
+            console.log(dec/aDegree);
+            console.log("x=" + x1 + " y="+y1 + " z="+z1);
+          }
+
+          points0.push( new Point3d( saoId, x1, -y1, z1, label, jlabel, r , mag, col, h) );
 //          if (label != "") {console.log(points0[i])};
     }      
+    for (var i = 0; i < points0.length; i++) {
+      if (isInBound(points0[i].x,points0[i].y,points0[i].z,points0[i].mag,points0[i].h)){
+        points.push(points0[i]);
+      }
+    };
 
     // equator data
     for (var i = 0; i <= pi*2; i+=aDegree*3) {
           var x = sphereRadius;
           var y = 0;
           var z = 0;
-          var delta = 0;
-          var alpha = i; 
+          var dec = 0;
+          var RA = i; 
+     /*     
           var Theta_alpha = Theta - alpha;
           var cos_Theta_alpha = Math.cos(Theta_alpha);
           var sin_Theta_alpha = Math.sin(Theta_alpha);
@@ -173,28 +292,114 @@ var screen_pos = 1000;
           var A1 = Math.atan(tan_A);
           var RA = (cos_h_cos_A<0)?A1+pi:A1+2*pi;
           var dec = h;
-
+*/
           x0 = x * Math.cos(dec) - z * Math.sin(dec);
           y0 = y;
           z0 = -x * Math.sin(dec) + z * Math.cos(dec);
 
-          x1 = x0 * Math.cos(RA) + y0 * Math.sin(RA);
-          y1 = -x0 * Math.sin(RA) + y0 * Math.cos(RA);
+          x1 = -x0 * Math.sin(RA) + y0 * Math.cos(RA);
+          y1 = x0 * Math.cos(RA) + y0 * Math.sin(RA);
           z1 = z0;
 
-      pathEquator0.push( new Point3d( "", x1, y1, z1, "", "", 2 , 1, "#f00", h) );
+          pathEquator0.push( new Point3d( "", x1, -y1, z1, "", "", 2 , 1, "#f00", h) );
     
     };
 
+    for (var i = 0; i < pathEquator0.length; i++) {
+      if (isInBound(pathEquator0[i].x,pathEquator0[i].y,pathEquator0[i].z,pathEquator0[i].mag,pathEquator0[i].h)){
+        pathEquator.push(pathEquator0[i]);
+      }
+    };
 
-    for (var i = 0; i < points0.length; i++) {
-      if (isInBound(points0[i].x,points0[i].y,points0[i].z,points0[i].mag,points0[i].h)){
-        pathEquator.push(points0[i]);
+    // horizon data
+    for (var i = 0; i <= pi*2; i+=aDegree*3) {
+ 
+          var x = sphereRadius;
+          var y = 0;
+          var z = 0;
+          var dec = 0;
+          var RA = i; 
+/*          
+          var Theta_alpha = Theta - alpha;
+          var cos_Theta_alpha = Math.cos(Theta_alpha);
+          var sin_Theta_alpha = Math.sin(Theta_alpha);
+          var cos_delta = Math.cos(delta);
+          var sin_delta = Math.sin(delta);
+          var sin_phi_sin_delta = sin_phi * sin_delta;
+          var cos_phi_cos_delta_cos_Theta_alpha = cos_phi * cos_delta * cos_Theta_alpha;
+          var sin_h = sin_phi_sin_delta + cos_phi_cos_delta_cos_Theta_alpha;
+          var h = Math.asin(sin_h);
+          var minus_cos_phi_sin_delta = -cos_phi * sin_delta;
+          var sin_phi_cos_delta_cos_Theta_alpha = sin_phi * cos_delta * cos_Theta_alpha;
+          var cos_h_cos_A = minus_cos_phi_sin_delta + sin_phi_cos_delta_cos_Theta_alpha;
+          var cos_h_sin_A =cos_delta * sin_Theta_alpha;
+          var tan_A = cos_h_sin_A / cos_h_cos_A;
+          var A1 = Math.atan(tan_A);
+          var RA = (cos_h_cos_A<0)?A1+pi:A1+2*pi;
+          var dec = 0//h;
+*/
+          x0 = x * Math.cos(dec) - z * Math.sin(dec);
+          y0 = y;
+          z0 = -x * Math.sin(dec) + z * Math.cos(dec);
+
+          x1 = -x0 * Math.sin(RA) + y0 * Math.cos(RA);
+          y1 = x0 * Math.cos(RA) + y0 * Math.sin(RA);
+          z1 = z0;
+
+          pathHorizon0.push( new Point3d( "", x1, -y1, z1, "", "", 2 , 1, "#0f0", 1) );
+    
+    };
+    for (var i = 0; i < pathHorizon0.length; i++) {
+      if (isInBound(pathHorizon0[i].x,pathHorizon0[i].y,pathHorizon0[i].z,pathHorizon0[i].mag,pathHorizon0[i].h)){
+        pathHorizon.push(pathHorizon0[i]);
+      }
+    };
+
+    // 子午線 data
+    for (var i = 0; i <= pi*2; i+=aDegree*3) {
+ 
+          var x = sphereRadius;
+          var y = 0;
+          var z = 0;
+          var dec = i;
+          var RA = 0; 
+/*          
+          var Theta_alpha = 0;//Theta - alpha;
+          var cos_Theta_alpha = Math.cos(Theta_alpha);
+          var sin_Theta_alpha = Math.sin(Theta_alpha);
+          var cos_delta = Math.cos(delta);
+          var sin_delta = Math.sin(delta);
+          var sin_phi_sin_delta = sin_phi * sin_delta;
+          var cos_phi_cos_delta_cos_Theta_alpha = cos_phi * cos_delta * cos_Theta_alpha;
+          var sin_h = sin_phi_sin_delta + cos_phi_cos_delta_cos_Theta_alpha;
+          var h = Math.asin(sin_h);
+          var minus_cos_phi_sin_delta = -cos_phi * sin_delta;
+          var sin_phi_cos_delta_cos_Theta_alpha = sin_phi * cos_delta * cos_Theta_alpha;
+          var cos_h_cos_A = minus_cos_phi_sin_delta + sin_phi_cos_delta_cos_Theta_alpha;
+          var cos_h_sin_A =cos_delta * sin_Theta_alpha;
+          var tan_A = cos_h_sin_A / cos_h_cos_A;
+          var A1 = Math.atan(tan_A);
+          var RA = (cos_h_cos_A<0)?A1+pi:A1+2*pi;
+          var dec = h;
+*/
+          x0 = x * Math.cos(dec) - z * Math.sin(dec);
+          y0 = y;
+          z0 = -x * Math.sin(dec) + z * Math.cos(dec);
+
+          x1 = -x0 * Math.sin(RA) + y0 * Math.cos(RA);
+          y1 = x0 * Math.cos(RA) + y0 * Math.sin(RA);
+          z1 = z0;
+
+          pathSigo0.push( new Point3d( "", x1, -y1, z1, "", "", 2 , 1, "#00f", 1) );
+    
+    };
+    for (var i = 0; i < pathSigo0.length; i++) {
+      if (isInBound(pathSigo0[i].x,pathSigo0[i].y,pathSigo0[i].z,pathSigo0[i].mag,pathSigo0[i].h)){
+        pathSigo.push(pathSigo0[i]);
       }
     };
   
   });
-
 
   // svg空間作成
   var svg01 =  d3.select("#svg01")
@@ -240,13 +445,44 @@ function draw(){
                 .y(function(d) { 
                   var z = sphereRadius *  d.z / (-sphereRadius - d.y)
                   return yScale(-z); });
-                //.interpolate("linear");  
-    var pathString = equator(pathEquator);
+
+    var pathString = equator(pathEquator) + "Z";
     svg01.append("path")
     .attr('d', pathString)
     .attr("stroke","#f0f")
+    .attr("stroke-width","10px");
+
+    var horizon = d3.line()
+                .x(function(d) { 
+                  var x = sphereRadius *  d.x / (-sphereRadius - d.y) 
+                  return xScale(-x); })
+                .y(function(d) { 
+                  var z = sphereRadius *  d.z / (-sphereRadius - d.y)
+                  return yScale(-z); });
+
+    var pathString = horizon(pathHorizon) + "Z";
+//    console.log("horizon" + pathString);
+    svg01.append("path")
+    .attr('d', pathString)
+    .attr("stroke","#0f0")
+    .style("fill","none")
     .attr("stroke-width","2px");
 
+    var sigo = d3.line()
+                .x(function(d) { 
+                  var x = sphereRadius *  d.x / (-sphereRadius - d.y) 
+                  return xScale(-x); })
+                .y(function(d) { 
+                  var z = sphereRadius *  d.z / (-sphereRadius - d.y)
+                  return yScale(-z); });
+
+    var pathString = sigo(pathSigo) + "Z";
+//    console.log("sigo" + pathString);
+    svg01.append("path")
+    .attr('d', pathString)
+    .attr("stroke","#00f")
+    .style("fill","none")
+    .attr("stroke-width","2px");
 
   /** add circles */
   svg01.selectAll("circle")
@@ -319,6 +555,8 @@ function draw(){
 
       points = [];
       pathEquator = [];
+      pathHorizon = [];
+      pathSigo = [];
 
       var count = points0.length;
 
@@ -382,7 +620,69 @@ function draw(){
           }
       };
 
+     count = pathHorizon0.length;
 
+      for (var i = 0; i < count; i++) {
+
+          x_r = pathHorizon0[i].x;
+          y_r = pathHorizon0[i].y;
+          z_r = pathHorizon0[i].z;
+          mag_r = pathHorizon0[i].mag;
+
+          x0_r = x_r * Math.cos(thetaZ) + y_r * Math.sin(thetaZ);
+          y0_r = -x_r * Math.sin(thetaZ) + y_r * Math.cos(thetaZ);
+          z0_r = z_r;
+
+          x1_r = x0_r * Math.cos(thetaY) - z0_r * Math.sin(thetaY);
+          y1_r = y0_r;
+          z1_r = -x0_r * Math.sin(thetaY) + z0_r * Math.cos(thetaY);
+
+          x2_r = x1_r;
+          y2_r = y1_r * Math.cos(thetaX) + z1_r * Math.sin(thetaX);
+          z2_r = -y1_r * Math.sin(thetaX) + z1_r * Math.cos(thetaX);
+
+          if ( isInBound( x2_r, y2_r, z2_r, mag_r,1 )){
+            pathHorizon.push( new Point3d( pathHorizon0[i].id,
+                                      x2_r, y2_r, z2_r, 
+                                      pathHorizon0[i].label, pathHorizon0[i].jlabel, 
+                                      pathHorizon0[i].r,
+                                      pathHorizon0[i].mag, pathHorizon0[i].col,
+                                      pathHorizon0[i].h ));
+          }
+      };
+
+   count = pathSigo0.length;
+
+      for (var i = 0; i < count; i++) {
+
+          x_r = pathSigo0[i].x;
+          y_r = pathSigo0[i].y;
+          z_r = pathSigo0[i].z;
+          mag_r = pathSigo0[i].mag;
+
+          x0_r = x_r * Math.cos(thetaZ) + y_r * Math.sin(thetaZ);
+          y0_r = -x_r * Math.sin(thetaZ) + y_r * Math.cos(thetaZ);
+          z0_r = z_r;
+
+          x1_r = x0_r * Math.cos(thetaY) - z0_r * Math.sin(thetaY);
+          y1_r = y0_r;
+          z1_r = -x0_r * Math.sin(thetaY) + z0_r * Math.cos(thetaY);
+
+          x2_r = x1_r;
+          y2_r = y1_r * Math.cos(thetaX) + z1_r * Math.sin(thetaX);
+          z2_r = -y1_r * Math.sin(thetaX) + z1_r * Math.cos(thetaX);
+
+          if ( isInBound( x2_r, y2_r, z2_r, mag_r,1 )){
+            pathSigo.push( new Point3d( pathSigo0[i].id,
+                                      x2_r, y2_r, z2_r, 
+                                      pathSigo0[i].label, pathSigo0[i].jlabel, 
+                                      pathSigo0[i].r,
+                                      pathSigo0[i].mag, pathSigo0[i].col,
+                                      pathSigo0[i].h ));
+          }
+      };
+
+//
 //      console.log(points);
 
   }
@@ -575,3 +875,26 @@ function resize() {
        .attr("width",width);
 }
 window.onresize = resize;
+
+$("#run").on("click", function(){
+  //  JED
+  var date_text = $("#inputDate").val().split('-');
+  var time_text = $("#inputTime").val().split(':');
+  var year = date_text[0];
+  var month = date_text[1];
+  var day = date_text[2];
+  var hour = time_text[0];
+  var minute = time_text[1];
+
+  date_ = new Date(year,month,day,hour,minute,0);
+
+  var dif = Math.floor($("#inputDif").val());
+  var result = getJED(date_, dif );
+  T = result.T;
+  $("#JED").html("JED= " + result.JED + " T= " + result.T);
+  date_.setMonth (date_.getMonth() - 1 );
+  $("#JST").html( date_.toLocaleDateString("ja-JP", options) );
+
+  rotation();
+  draw();
+})
