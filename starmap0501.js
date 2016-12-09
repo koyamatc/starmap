@@ -74,8 +74,10 @@ var options = {
   $("#inputTime").val(timeString);
   $("#inputDif").val(-9);
 
-  function Point3d(id, x, y, z, label, jlabel, r, mag, col, h){
+  function Point3d(id, RA, dec, x, y, z, label, jlabel, r, mag, col, h){
     this.id = id;
+    this.RA = RA;
+    this.dec = dec
     this.x = x;
     this.y = y;
     this.z = z;
@@ -141,6 +143,7 @@ var options = {
 }
   // 点のデータ
   var points0 = [];
+  var points1 = [];
   var points = [];
   var pathEquator0 = [];
   var pathEquator = [];
@@ -209,37 +212,17 @@ function calc(alpha, delta){
           label = data[i].label;
           r = data[i].r;
           col = data[i].color 
-/*
-          var Theta_alpha = Theta - alpha;
-          var cos_Theta_alpha = Math.cos(Theta_alpha);
-          var sin_Theta_alpha = Math.sin(Theta_alpha);
-          var cos_delta = Math.cos(delta);
-          var sin_delta = Math.sin(delta);
-          var sin_phi_sin_delta = sin_phi * sin_delta;
-          var cos_phi_cos_delta_cos_Theta_alpha = cos_phi * cos_delta * cos_Theta_alpha;
-          var sin_h = sin_phi_sin_delta + cos_phi_cos_delta_cos_Theta_alpha;
-          var h = Math.asin(sin_h);
-          var minus_cos_phi_sin_delta = -cos_phi * sin_delta;
-          var sin_phi_cos_delta_cos_Theta_alpha = sin_phi * cos_delta * cos_Theta_alpha;
-          var cos_h_cos_A = minus_cos_phi_sin_delta + sin_phi_cos_delta_cos_Theta_alpha;
-          var cos_h_sin_A =cos_delta * sin_Theta_alpha;
-          var tan_A = cos_h_sin_A / cos_h_cos_A;
-          var A1 = Math.atan(tan_A);
-          var RA = (cos_h_cos_A<0)?A1+pi:A1+2*pi;
-          var dec = h;
 
-
-*/
           var result = calc(RA, dec);
-          var RA = result.RA;
-          var dec = result.dec;
+          var alpha = result.RA;
+          var delta = result.dec;
 
-          x0 = x * Math.cos(dec) - z * Math.sin(dec);
+          x0 = x * Math.cos(delta) - z * Math.sin(delta);
           y0 = y;
-          z0 = -x * Math.sin(dec) + z * Math.cos(dec);
+          z0 = -x * Math.sin(delta) + z * Math.cos(delta);
 
-          x1 = x0 * Math.cos(RA) + y0 * Math.sin(RA);
-          y1 = -x0 * Math.sin(RA) + y0 * Math.cos(RA);
+          y1 = x0 * Math.cos(alpha) + y0 * Math.sin(alpha);
+          x1 = -x0 * Math.sin(alpha) + y0 * Math.cos(alpha);
           z1 = z0;
 
           if (saoId == "  308") {
@@ -258,11 +241,13 @@ function calc(alpha, delta){
             console.log("x=" + x1 + " y="+y1 + " z="+z1);
           }
 
-          points0.push( new Point3d( saoId, x1, -y1, z1, label, jlabel, r , mag, col, h) );
+          points0.push( new Point3d( saoId, RA, dec, x1, -y1, z1, 
+                                     label, jlabel, r , mag, col, h) );
 //          if (label != "") {console.log(points0[i])};
     }      
     for (var i = 0; i < points0.length; i++) {
-      if (isInBound(points0[i].x,points0[i].y,points0[i].z,points0[i].mag,points0[i].h)){
+      if (isInBound(points0[i].x,points0[i].y,points0[i].z,
+                    points0[i].mag,points0[i].h)){
         points.push(points0[i]);
       }
     };
@@ -301,7 +286,8 @@ function calc(alpha, delta){
           y1 = x0 * Math.cos(RA) + y0 * Math.sin(RA);
           z1 = z0;
 
-          pathEquator0.push( new Point3d( "", x1, -y1, z1, "", "", 2 , 1, "#f00", h) );
+          pathEquator0.push( new Point3d( "", RA, dec, x1, -y1, z1,
+                                          "", "", 2 , 1, "#f00", h) );
     
     };
 
@@ -346,7 +332,8 @@ function calc(alpha, delta){
           y1 = x0 * Math.cos(RA) + y0 * Math.sin(RA);
           z1 = z0;
 
-          pathHorizon0.push( new Point3d( "", x1, -y1, z1, "", "", 2 , 1, "#0f0", 1) );
+          pathHorizon0.push( new Point3d( "",RA, dec, x1, -y1, z1, 
+                                          "", "", 2 , 1, "#0f0", 1) );
     
     };
     for (var i = 0; i < pathHorizon0.length; i++) {
@@ -390,7 +377,8 @@ function calc(alpha, delta){
           y1 = x0 * Math.cos(RA) + y0 * Math.sin(RA);
           z1 = z0;
 
-          pathSigo0.push( new Point3d( "", x1, -y1, z1, "", "", 2 , 1, "#00f", 1) );
+          pathSigo0.push( new Point3d( "", RA, dec,x1, -y1, z1, 
+                                       "", "", 2 , 1, "#00f", 1) );
     
     };
     for (var i = 0; i < pathSigo0.length; i++) {
@@ -437,7 +425,7 @@ function draw(){
   d3.selectAll("circle").remove();
   d3.selectAll("text").remove();
   d3.selectAll("path").remove();
-
+/*
   var equator = d3.line()
                 .x(function(d) { 
                   var x = sphereRadius *  d.x / (-sphereRadius - d.y) 
@@ -483,7 +471,7 @@ function draw(){
     .attr("stroke","#00f")
     .style("fill","none")
     .attr("stroke-width","2px");
-
+*/
   /** add circles */
   svg01.selectAll("circle")
                 .data(points)
@@ -549,7 +537,7 @@ function draw(){
   draw();
 
   //　回転
-  var x_r,y_r,z_r,x0_r,y0_r,z0_r,x1_r,y1_r,z1_r,x2_r,y2_r,z2_r,mag_r;
+  var RA_r,dec_r,x_r,y_r,z_r,x0_r,y0_r,z0_r,x1_r,y1_r,z1_r,x2_r,y2_r,z2_r,mag_r;
   function rotation(){
 
 
@@ -562,6 +550,8 @@ function draw(){
 
       for (var i = 0; i < count; i++) {
 
+          RA_r = points0[i].RA;
+          dec_r = points0[i].dec;
           x_r = points0[i].x;
           y_r = points0[i].y;
           z_r = points0[i].z;
@@ -581,6 +571,7 @@ function draw(){
 
           if ( isInBound( x2_r, y2_r, z2_r, mag_r,1 )){
             points.push( new Point3d( points0[i].id,
+                                      RA_r, dec_r,
                                       x2_r, y2_r, z2_r, 
                                       points0[i].label, points0[i].jlabel, 
                                       points0[i].r,
@@ -588,11 +579,13 @@ function draw(){
                                       points0[i].h ));
           }
       };
-
+/*
       count = pathEquator0.length;
 
       for (var i = 0; i < count; i++) {
 
+          RA_r = pathEquator0[i].RA;
+          dec_r = pathEquator0[i].dec;
           x_r = pathEquator0[i].x;
           y_r = pathEquator0[i].y;
           z_r = pathEquator0[i].z;
@@ -610,8 +603,9 @@ function draw(){
           y2_r = y1_r * Math.cos(thetaX) + z1_r * Math.sin(thetaX);
           z2_r = -y1_r * Math.sin(thetaX) + z1_r * Math.cos(thetaX);
 
-          if ( true /*isInBound( x2_r, y2_r, z2_r, mag_r,1 )*/){
+          if ( true ){
             pathEquator.push( new Point3d( pathEquator0[i].id,
+                                      RA_r, dec_r,
                                       x2_r, y2_r, z2_r, 
                                       pathEquator0[i].label, pathEquator0[i].jlabel, 
                                       pathEquator0[i].r,
@@ -624,6 +618,8 @@ function draw(){
 
       for (var i = 0; i < count; i++) {
 
+          RA_r = pathHorizon0[i].RA;
+          dec_r = pathHorizon0[i].dec;
           x_r = pathHorizon0[i].x;
           y_r = pathHorizon0[i].y;
           z_r = pathHorizon0[i].z;
@@ -643,7 +639,7 @@ function draw(){
 
           if ( isInBound( x2_r, y2_r, z2_r, mag_r,1 )){
             pathHorizon.push( new Point3d( pathHorizon0[i].id,
-                                      x2_r, y2_r, z2_r, 
+                                      RA_r, dec_r, x2_r, y2_r, z2_r, 
                                       pathHorizon0[i].label, pathHorizon0[i].jlabel, 
                                       pathHorizon0[i].r,
                                       pathHorizon0[i].mag, pathHorizon0[i].col,
@@ -655,6 +651,8 @@ function draw(){
 
       for (var i = 0; i < count; i++) {
 
+          RA_r = pathSigo0[i].RA;
+          dec_r = pathSigo0[i].dec;
           x_r = pathSigo0[i].x;
           y_r = pathSigo0[i].y;
           z_r = pathSigo0[i].z;
@@ -674,14 +672,14 @@ function draw(){
 
           if ( isInBound( x2_r, y2_r, z2_r, mag_r,1 )){
             pathSigo.push( new Point3d( pathSigo0[i].id,
-                                      x2_r, y2_r, z2_r, 
+                                      RA_r, dec_r, x2_r, y2_r, z2_r, 
                                       pathSigo0[i].label, pathSigo0[i].jlabel, 
                                       pathSigo0[i].r,
                                       pathSigo0[i].mag, pathSigo0[i].col,
                                       pathSigo0[i].h ));
           }
       };
-
+*/
 //
 //      console.log(points);
 
@@ -741,34 +739,10 @@ var keyEvent = function() {
 var t = d3.timer(autoRotation);
 
 function autoRotation(){
-  //thetaX += (pi / 3600) * speed;
-  thetaZ += (pi / 3600) * speed;
-  rotation();
+  convert(1);
   draw();
-  t.stop();
 }
 
-// button event
-d3.select("#btnUp").on("click", function(){
-    thetaX += rad;
-    rotation();
-    draw();
-})
-d3.select("#btnDown").on("click", function(){
-    thetaX -= rad;
-    rotation();
-    draw();
-})
-d3.select("#btnLeft").on("click", function(){
-    thetaZ -= rad;
-    rotation();
-    draw();
-})
-d3.select("#btnRight").on("click", function(){
-    thetaZ += rad;
-    rotation();
-    draw();
-})
 
 d3.select("#autoStart").on("click", function(){
   t.restart(autoRotation);
@@ -885,16 +859,82 @@ $("#run").on("click", function(){
   var day = date_text[2];
   var hour = time_text[0];
   var minute = time_text[1];
-
   date_ = new Date(year,month,day,hour,minute,0);
+  date_.setMonth (date_.getMonth() - 1 );
 
+  convert(0);
+  draw();
+})
+
+function convert(pMinutes){
+
+  date_.setMinutes (date_.getMinutes() + pMinutes);
+
+/*
+  year_ = date_.getFullYear();
+  month_ = date_.getMonth();
+  day_ = date_.getDate();
+  hour_ = date_.getHours();
+  minute_ = date_.getMinutes();
+
+  var dateString = formatDate(year_, month_, day_);
+//  $("#inputDate").val(dateString);
+  var timeString = formatTime(hour_, minute_);
+ // $("#inputTime").val(timeString);
+*/  
   var dif = Math.floor($("#inputDif").val());
   var result = getJED(date_, dif );
   T = result.T;
+  Theta = pi * 2 * T * 36000;
+
   $("#JED").html("JED= " + result.JED + " T= " + result.T);
-  date_.setMonth (date_.getMonth() - 1 );
   $("#JST").html( date_.toLocaleDateString("ja-JP", options) );
 
-  rotation();
-  draw();
-})
+  // Clear star data for display
+  points = [];
+  points1 = [];
+  var count = points0.length;
+  var x0,y0,z0,x1,y1,z1;
+  var alpha,delta,mag,label,jlabel,r,col,saoId;
+  var inc = aDegree * -90;
+    
+  for (var i = 0; i < count; i++) {
+
+    var result = calc(points0[i].RA, points0[i].dec);
+    var alpha = result.RA;
+    var delta = result.dec;
+
+    var x = sphereRadius;
+    var y = 0;
+    var z = 0;
+          
+    x0 = x * Math.cos(delta) - z * Math.sin(delta);
+    y0 = y;
+    z0 = -x * Math.sin(delta) + z * Math.cos(delta);
+
+    y1 = x0 * Math.cos(alpha) + y0 * Math.sin(alpha);
+    x1 = -x0 * Math.sin(alpha) + y0 * Math.cos(alpha);
+    z1 = z0;
+
+
+          points1.push( new Point3d( points0[i].id, 
+                                     points0[i].RA, 
+                                     points0[i].dec, 
+                                     x1, -y1, z1, 
+                                     points0[i].label, 
+                                     points0[i].jlabel, 
+                                     points0[i].r , 
+                                     points0[i].mag, 
+                                     points0[i].col, 
+                                     points0[i].h) );
+    } // end for
+
+    count = points1.length;      
+    for (var i = 0; i < count; i++) {
+      if (isInBound(points1[i].x,points1[i].y,points1[i].z,
+                    points1[i].mag,points1[i].h)){
+        points.push(points1[i]);
+      }
+    };
+
+}
