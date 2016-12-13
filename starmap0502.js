@@ -517,6 +517,23 @@ function draw(){
    .style("fill","#fff")
    .exit()
    .remove();
+  
+  var dateTimePos = [{"x":30,"y":20}];
+  svg01.selectAll("#dateTime")
+   .data(dateTimePos)
+   .enter()
+   .append("text")
+   .attr("x", function(d) { return d.x })
+   .attr("y", function(d) { return d.y })
+   .attr("id","dateTime")
+   .text(function(d) {
+       return date_.toLocaleDateString("ja-JP", options)
+      })  // 文字列の設定
+   .attr("font-family", "sans-serif") // font属性
+   .attr("font-size", "14px") // fontｻｲｽﾞ
+   .style("fill","#fff")
+   .exit()
+   .remove();
 
 }
 
