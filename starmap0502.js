@@ -17,7 +17,8 @@ var screen_pos = 1000;
   var factor = 3.0,
       factorY;
   var mag = 5.2;
-  var speed = 5; 
+  var speed = 5;
+  var horizon_radius; 
 
 // formating Date yyyy-mm-dd
 function formatDate(year,month,day){
@@ -311,6 +312,8 @@ function calc(alpha, delta){
           var z = sphereRadius * Math.sin(i);
           var dec = 0;
           var RA = i; 
+
+          if ( i == 0 ) { horizon_radius = x };
 /*
           var result = calc(RA, dec);
           var alpha = result.RA;
@@ -694,6 +697,14 @@ function draw(){
     //console.log(z);
       if ( h > 0 && m <= mag) { return true}
       else { return false}
+    /*
+      var h_r = xScale(horizon_radius);
+      //console.log("x=" + x + " y=" + y + " z=" + z + " r=" + h_r );
+      if ( ( (x*x + z*z) <= h_r * h_r ) && m <= mag )
+        { return true }
+      else
+        { return false };
+    */
   }
 
   var rad = aDegree * 1;
@@ -965,10 +976,14 @@ function convert(pSeconds){
 
   count = pathHorizon0.length;      
   for (var i = 0; i < count; i++) {
+
+    if ( i == 0 ) { horizon_radius = xScale(x) };
+
     if (isInBound(pathHorizon0[i].x,pathHorizon0[i].y,pathHorizon0[i].z,
                   pathHorizon0[i].mag,pathHorizon0[i].h)){
       pathHorizon.push(pathHorizon0[i]);
     }
+
   };
 
 }
