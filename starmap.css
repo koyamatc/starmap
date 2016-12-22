@@ -1,3 +1,16 @@
+body {
+  background-color: #333;
+  color: #fff;
+}
+
+a {
+  color : #fff;
+}
+
+.head h2 {
+  color : #f00;
+}
+
 .slider {
   position: relative;
   top: 40px;
@@ -30,4 +43,10 @@
   box-shadow: 0 1px 4px rgba(0, 0, 0, 0.2);
   top: -7px;
   left: -7px;
+}
+
+.modal-dialog {
+  background-color: blue;
+  background: blue;
+  color : #000;
 }
