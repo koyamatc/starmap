@@ -9,7 +9,10 @@ var screen_pos = 1000;
       width = window.innerWidth ;  // 画面の幅
   var pi = Math.PI,
       aDegree = pi / 180;
-  var declination = 35.0;    
+  var declination = 35.664,
+      longitudeDeg = 139,
+      longitudeMin = 30,
+      longitudeSec = 20.5;    
   var thetaX = -aDegree*90,
       thetaY = 0,
       thetaZ = pi;
@@ -79,7 +82,49 @@ var options = {
   var timeString = formatTime(hour_, minute_);
   $("#inputTime").val(timeString);
   $("#inputDif").val(-9);
-  $("#inputDec").val(35.7);
+  // 緯度、経度　取得
+  if (navigator.geolocation){
+      navigator.geolocation.getCurrentPosition(
+        function(position){
+          var lat = position.coords.latitude;
+          var lng  = position.coords.longitude;
+          /*
+          var txt = "緯度："+lat+"<br />経度："+lng;
+          document.getElementById("pos").innerHTML = txt;
+        */
+        },
+      function( error )
+      {
+      // エラーコード(error.code)の番号
+      // 0:UNKNOWN_ERROR        原因不明のエラー
+      // 1:PERMISSION_DENIED      利用者が位置情報の取得を許可しなかった
+      // 2:POSITION_UNAVAILABLE   電波状況などで位置情報が取得できなかった
+      // 3:TIMEOUT          位置情報の取得に時間がかかり過ぎた…
+
+      // エラー番号に対応したメッセージ
+      var errorInfo = [
+        "原因不明のエラーが発生しました…。" ,
+        "位置情報の取得が許可されませんでした…。" ,
+        "電波状況などで位置情報が取得できませんでした…。" ,
+        "位置情報の取得に時間がかかり過ぎてタイムアウトしました…。"
+      ] ;
+
+      // エラー番号
+      var errorNo = error.code ;
+
+      // エラーメッセージ
+      var errorMessage = "[エラー番号: " + errorNo + "]\n" + errorInfo[ errorNo ] ;
+
+      // アラート表示
+      alert( errorMessage ) ;
+
+    });
+  } else {
+  };
+  $("#inputDec").val(declination);
+  $("#inputDeg").val(longitudeDeg);
+  $("#inputMin").val(longitudeMin);
+  $("#inputSec").val(longitudeSec);
 
   function Point3d(id, RA, dec, x, y, z, label, jlabel, r, mag, col, h){
     this.id = id;
@@ -103,7 +148,7 @@ var options = {
   T = result.T;
   $("#JED").html("JED= " + result.JED + " T= " + T);
   datetime.setMonth (datetime.getMonth() - 1 );
-  $("#JST").html( datetime.toLocaleDateString("ja-JP", options) );
+  //$("#JST").html( datetime.toLocaleDateString("ja-JP", options) );
 
   //観測日
   //var date = new Date(1978,6,10,21,20,0,0);
@@ -537,6 +582,42 @@ function draw(){
    .style("fill","#fff")
    .exit()
    .remove();
+  
+  var declinationPos = [{"x":30,"y":45}];
+  svg01.selectAll("#declination")
+   .data(declinationPos)
+   .enter()
+   .append("text")
+   .attr("x", function(d) { return d.x })
+   .attr("y", function(d) { return d.y })
+   .attr("id","declination")
+   .text(function(d) {
+       return "緯度= "　+ declination;
+      })  // 文字列の設定
+   .attr("font-family", "sans-serif") // font属性
+   .attr("font-size", "14px") // fontｻｲｽﾞ
+   .style("fill","#fff")
+   .exit()
+   .remove();
+
+  var longitudePos = [{"x":30,"y":70}];
+  svg01.selectAll("#longitude")
+   .data(longitudePos)
+   .enter()
+   .append("text")
+   .attr("x", function(d) { return d.x })
+   .attr("y", function(d) { return d.y })
+   .attr("id","longitude")
+   .text(function(d) {
+       return "経度= " + longitudeDeg + "° "
+                      + longitudeMin + "m  "
+                      + Math.floor(longitudeSec*100)/100 + "s";
+      })  // 文字列の設定
+   .attr("font-family", "sans-serif") // font属性
+   .attr("font-size", "14px") // fontｻｲｽﾞ
+   .style("fill","#fff")
+   .exit()
+   .remove();
 
 }
 
@@ -912,7 +993,7 @@ function convert(pSeconds){
   Theta = pi * 2 * T * 36000;
 
   $("#JED").html("JED= " + result.JED + " T= " + result.T);
-  $("#JST").html( date_.toLocaleDateString("ja-JP", options) );
+//  $("#JST").html( date_.toLocaleDateString("ja-JP", options) );
 //
   var meanSidereal = getMeanSiderealTime(date_);
   var h = meanSidereal.time.hours;
