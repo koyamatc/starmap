@@ -204,9 +204,10 @@ var options = {
   var pathSigo0 = [];
   var pathSigo = [];
 
+  // 地方恒星時　theta を求める
   //var Theta = 270.03262168375653 * aDegree;  // 恒星時
-  //var Theta = sidereal.radians;
-  var Theta = pi * 2 * T * 100 + 2 * pi / 4 ;
+  var Theta = sidereal.radians;
+  //var Theta = pi * 2 * T * 100 + (3 * pi) / 4 ;
   
   var phi = aDegree * ( 90 - declination　);　//　緯度
   var cos_phi = Math.cos(phi);
